@@ -1,14 +1,17 @@
 package com.example.demo;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.ConstructorArgumentValues;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.guice.annotation.EnableGuiceModules;
+import org.springframework.core.NativeDetector;
 
-import com.google.inject.AbstractModule;
-
-@SpringBootApplication
-@EnableGuiceModules
+@SpringBootApplication(proxyBeanMethods = false)
 public class DemoApplication {
 
 	public static void main(String[] args) {
@@ -27,12 +30,23 @@ public class DemoApplication {
 
 }
 
-class MyModule extends AbstractModule {
+class MyModule implements BeanDefinitionRegistryPostProcessor {
 
 	@Override
-	protected void configure() {
-		bind(Service.class).to(MyService.class);
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 	}
+
+	@Override
+	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+		if (!NativeDetector.inNativeImage()) {
+			RootBeanDefinition bean = new RootBeanDefinition(MyService.class);
+			ConstructorArgumentValues args = new ConstructorArgumentValues();
+			args.addGenericArgumentValue(new Foo());
+			bean.setConstructorArgumentValues(args);
+			registry.registerBeanDefinition("service", bean);
+		}
+	}
+
 
 }
 
@@ -42,4 +56,9 @@ class Spam {
 }
 
 class MyService implements Service {
+	MyService(Foo foo) {
+		System.err.println("Foo: " + foo);
+	}
 }
+
+class Foo {}
