@@ -1,9 +1,7 @@
 package com.example.demo;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -38,33 +36,12 @@ class MyModule implements BeanDefinitionRegistryPostProcessor {
 
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-		RootBeanDefinition bean = new RootBeanDefinition(ServiceFactoryBean.class);
-		ConstructorArgumentValues args = new ConstructorArgumentValues();
-		args.addIndexedArgumentValue(0, new Foo());
-		bean.setConstructorArgumentValues(args);
+		RootBeanDefinition bean = new RootBeanDefinition(MyService.class);
+		bean.setInstanceSupplier(() -> new MyService(new Foo()));
+		bean.setAttribute(ExcludeFilter.IGNORE_ME, "true");
 		registry.registerBeanDefinition("service", bean);
 	}
 
-}
-
-class ServiceFactoryBean implements FactoryBean<Service> {
-
-	private Foo foo;
-
-	ServiceFactoryBean(Foo foo) {
-		this.foo = foo;
-	}
-
-	@Override
-	public Service getObject() throws Exception {
-		return new MyService(this.foo);
-	}
-
-	@Override
-	public Class<?> getObjectType() {
-		return MyService.class;
-	}
-	
 }
 
 class Spam {
