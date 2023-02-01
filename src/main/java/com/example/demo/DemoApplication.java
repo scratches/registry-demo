@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -38,13 +39,27 @@ class MyModule implements BeanDefinitionRegistryPostProcessor {
 
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-		RootBeanDefinition bean = new RootBeanDefinition(MyService.class);
+		RootBeanDefinition bean = new RootBeanDefinition(ServiceFactoryBean.class);
 		ConstructorArgumentValues args = new ConstructorArgumentValues();
-		args.addGenericArgumentValue(new Foo());
+		// args.addGenericArgumentValue(new Foo());
 		bean.setConstructorArgumentValues(args);
 		registry.registerBeanDefinition("service", bean);
 	}
 
+}
+
+class ServiceFactoryBean implements FactoryBean<Service> {
+
+	@Override
+	public Service getObject() throws Exception {
+		return new MyService(new Foo());
+	}
+
+	@Override
+	public Class<?> getObjectType() {
+		return MyService.class;
+	}
+	
 }
 
 class Spam {
