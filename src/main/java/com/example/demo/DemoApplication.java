@@ -38,15 +38,12 @@ class MyModule implements BeanDefinitionRegistryPostProcessor {
 
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-		if (!NativeDetector.inNativeImage()) {
-			RootBeanDefinition bean = new RootBeanDefinition(MyService.class);
-			ConstructorArgumentValues args = new ConstructorArgumentValues();
-			args.addGenericArgumentValue(new Foo());
-			bean.setConstructorArgumentValues(args);
-			registry.registerBeanDefinition("service", bean);
-		}
+		RootBeanDefinition bean = new RootBeanDefinition(MyService.class);
+		ConstructorArgumentValues args = new ConstructorArgumentValues();
+		args.addGenericArgumentValue(new Foo());
+		bean.setConstructorArgumentValues(args);
+		registry.registerBeanDefinition("service", bean);
 	}
-
 
 }
 
@@ -61,4 +58,5 @@ class MyService implements Service {
 	}
 }
 
-class Foo {}
+class Foo {
+}
