@@ -10,7 +10,6 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.NativeDetector;
 
 @SpringBootApplication(proxyBeanMethods = false)
 public class DemoApplication {
@@ -41,7 +40,7 @@ class MyModule implements BeanDefinitionRegistryPostProcessor {
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 		RootBeanDefinition bean = new RootBeanDefinition(ServiceFactoryBean.class);
 		ConstructorArgumentValues args = new ConstructorArgumentValues();
-		// args.addGenericArgumentValue(new Foo());
+		args.addIndexedArgumentValue(0, new Foo());
 		bean.setConstructorArgumentValues(args);
 		registry.registerBeanDefinition("service", bean);
 	}
@@ -50,9 +49,15 @@ class MyModule implements BeanDefinitionRegistryPostProcessor {
 
 class ServiceFactoryBean implements FactoryBean<Service> {
 
+	private Foo foo;
+
+	ServiceFactoryBean(Foo foo) {
+		this.foo = foo;
+	}
+
 	@Override
 	public Service getObject() throws Exception {
-		return new MyService(new Foo());
+		return new MyService(this.foo);
 	}
 
 	@Override
